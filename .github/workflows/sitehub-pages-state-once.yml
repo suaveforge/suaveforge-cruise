@@ -24,10 +24,11 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/pages" > /tmp/pages.json
           node <<'NODE'
           const fs=require('fs'); const p=JSON.parse(fs.readFileSync('/tmp/pages.json','utf8'));
-          const out={status:p.status,cname:p.cname,https_enforced:p.https_enforced,build_type:p.build_type,source:p.source,protected_domain_state:p.protected_domain_state,pending_domain_unverified_at:p.pending_domain_unverified_at,https_certificate:p.https_certificate?{state:p.https_certificate.state,description:p.https_certificate.description,domains:p.https_certificate.domains,expires_at:p.https_certificate.expires_at}:null};
+          const out={status:p.status,cname:p.cname,https_enforced:p.https_enforced,build_type:p.build_type,source:p.source,protected_domain_state:p.protected_domain_state,p.pending_domain_unverified_at,https_certificate:p.https_certificate?{state:p.https_certificate.state,description:p.https_certificate.description,domains:p.https_certificate.domains,expires_at:p.https_certificate.expires_at}:null};
           console.log('P09_PAGES_STATE='+JSON.stringify(out));
           NODE
           gh api "repos/${GITHUB_REPOSITORY}/pages/health" > /tmp/health.json || true
           node <<'NODE'
           const fs=require('fs'); if(!fs.existsSync('/tmp/health.json')) process.exit(0); let p={}; try{p=JSON.parse(fs.readFileSync('/tmp/health.json','utf8'))}catch{}; const a=p.alt_domain||{}; const d=p.domain||{}; console.log('P09_PAGES_HEALTH='+JSON.stringify({domain:{host:d.host,dns_resolves:d.dns_resolves,is_proxied:d.is_proxied,is_cloudflare_ip:d.is_cloudflare_ip,is_served_by_pages:d.is_served_by_pages,https_error:d.https_error},alt_domain:{host:a.host,dns_resolves:a.dns_resolves,is_served_by_pages:a.is_served_by_pages,https_error:a.https_error}}));
           NODE
+# rerun 2026-09-10 KST
