@@ -1,0 +1,37 @@
+name: SiteHub Pages cert diagnostic hosted once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sitehub-pages-cert-diagnostic-hosted-once.yml'
+
+permissions:
+  contents: read
+  pages: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read GitHub Pages certificate and DNS state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages"
+          curl -fsS -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' "$api" >/tmp/pages.json
+          node <<'NODE'
+          const p=require('/tmp/pages.json'); const c=p.https_certificate||{};
+          console.log('P09_PAGES='+JSON.stringify({status:p.status,cname:p.cname,html_url:p.html_url,https_enforced:p.https_enforced,source:p.source,build_type:p.build_type,certificate:{state:c.state,description:c.description,domains:c.domains,expires_at:c.expires_at}}));
+          NODE
+          echo "P09_DNS_A=$(dig +short A cruise.suaveforge.com | paste -sd, -)"
+          echo "P09_DNS_CNAME=$(dig +short CNAME cruise.suaveforge.com | paste -sd, -)"
+          echo "P09_DNS_CAA=$(dig +short CAA cruise.suaveforge.com | paste -sd, -)"
+          echo "ZONE_CAA=$(dig +short CAA suaveforge.com | paste -sd, -)"
+          for r in 1.1.1.1 8.8.8.8; do
+            echo "P09_RESOLVER_${r//./_}_A=$(dig @$r +short A cruise.suaveforge.com | paste -sd, -)"
+            echo "P09_RESOLVER_${r//./_}_CNAME=$(dig @$r +short CNAME cruise.suaveforge.com | paste -sd, -)"
+          done
