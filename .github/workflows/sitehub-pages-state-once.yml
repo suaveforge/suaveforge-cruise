@@ -24,7 +24,7 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/pages" > /tmp/pages.json
           node <<'NODE'
           const fs=require('fs'); const p=JSON.parse(fs.readFileSync('/tmp/pages.json','utf8'));
-          const out={status:p.status,cname:p.cname,https_enforced:p.https_enforced,build_type:p.build_type,source:p.source,protected_domain_state:p.protected_domain_state,p.pending_domain_unverified_at,https_certificate:p.https_certificate?{state:p.https_certificate.state,description:p.https_certificate.description,domains:p.https_certificate.domains,expires_at:p.https_certificate.expires_at}:null};
+          const out={status:p.status,cname:p.cname,https_enforced:p.https_enforced,build_type:p.build_type,source:p.source,protected_domain_state:p.protected_domain_state,pending_domain_unverified_at:p.pending_domain_unverified_at,https_certificate:p.https_certificate?{state:p.https_certificate.state,description:p.https_certificate.description,domains:p.https_certificate.domains,expires_at:p.https_certificate.expires_at}:null};
           console.log('P09_PAGES_STATE='+JSON.stringify(out));
           NODE
           gh api "repos/${GITHUB_REPOSITORY}/pages/health" > /tmp/health.json || true
